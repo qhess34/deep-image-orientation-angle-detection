@@ -1,3 +1,39 @@
+## Docker usage
+
+Clone repo and branch :
+
+  git clone https://github.com/pidahbus/deep-image-orientation-angle-detection.git -b add_docker
+
+Download model https://drive.google.com/file/d/1sdmPmaDhivdHPfn9M9vAkTbiprbPq94e/view as ./weights/model-vit-ang-loss.h5 
+
+Build docker image :
+
+  docker build -t dioad .
+
+In your picture directory :
+
+  for i in $(find); do docker run -v ./:/data dioad python correct_360.py /data/$(basename $i); done  
+
+Apply the corrections :
+
+  while IFS=, read -r file roll pitch rest
+  do
+    file=$(echo "$file" | xargs);
+    roll=$(echo "$roll" | xargs);
+    pitch=$(echo "$pitch" | xargs);
+
+    [ -z "$file" ] && continue;
+    if [ -z "$roll" ] || [ -z "$pitch" ]
+    then
+      echo "skip $file (roll/pitch manquant)";
+      continue
+    fi
+    pitch=$(awk "BEGIN {print -1 * ($pitch)}");
+    echo "apply $file roll=$roll pitch=$pitch";
+    exiftool -overwrite_original "-XMP-GPano:PoseRollDegrees=$roll" "-XMP-GPano:PosePitchDegrees=$pitch" "$file"
+  done < check.csv 
+
+
 ## Raspberry Pi 4/5 miniconda
 
 quickly dropping my notes here…

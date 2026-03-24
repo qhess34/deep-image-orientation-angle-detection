@@ -7,6 +7,9 @@ from infer import Inference
 import tempfile
 import argparse
 from loguru import logger
+import csv
+import subprocess
+
 
 def main():
     parser = argparse.ArgumentParser(description="Correct 360 photo orientation using cubemap faces.")
@@ -54,7 +57,8 @@ def main():
         u_deg, v_deg = face_configs[face_key]
         # Standard extraction (no rotation/tilt)
         face_img = py360convert.e2p(img, fov_deg=120, u_deg=u_deg, v_deg=v_deg, out_hw=(400, 400), mode='bilinear')
-        
+       
+        temp_dir = "/tmp" 
         face_path = os.path.join(temp_dir, f"temp_face_{face_key}_p1.jpg")
         cv2.imwrite(face_path, face_img)
         
@@ -84,7 +88,7 @@ def main():
         # Using narrower 50 FOV for better precision in refinement
         face_img = py360convert.e2p(img, fov_deg=90, u_deg=u_deg, v_deg=v_deg, 
                                     in_rot_deg=in_rot, out_hw=(400, 400), mode='bilinear')
-        
+        temp_dir = "/tmp" 
         face_path = os.path.join(temp_dir, f"temp_face_{face_key}_p2.jpg")
         cv2.imwrite(face_path, face_img)
         
@@ -114,6 +118,26 @@ def main():
     print("="*40)
     print("\nApply these values as-is (or inverted depending on your viewer's convention)")
     print("to correct the horizon of your 360 photo.")
+    exif_roll = subprocess.check_output(
+      ["exiftool", "-s", "-s", "-s", "-XMP-GPano:PoseRollDegrees", args.image_path],
+      text=True
+    ).strip()
+
+    exif_pitch = subprocess.check_output(
+      ["exiftool", "-s", "-s", "-s", "-XMP-GPano:PosePitchDegrees", args.image_path],
+      text=True
+    ).strip()
+
+    line = [
+      os.path.basename(args.image_path),
+      f"{final_roll:8.2f}",
+      f"{final_pitch:8.2f}",
+      exif_roll,
+      exif_pitch
+    ]
+    with open("/data/check.csv", "a", newline="", encoding="utf-8") as f:
+      writer = csv.writer(f)
+      writer.writerow(line)
 
 if __name__ == "__main__":
     main()
