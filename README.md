@@ -16,12 +16,12 @@ In your picture directory :
 
 Apply the corrections :
 
-`while IFS=, read -r file roll pitch rest
+```
+while IFS=, read -r file roll pitch rest
  do
-    file=$(echo "$file" | xargs);
-    roll=$(echo "$roll" | xargs);
-    pitch=$(echo "$pitch" | xargs);
-  
+    file=$(echo "$file" | xargs)
+    roll=$(echo "$roll" | xargs)
+    pitch=$(echo "$pitch" | xargs)  
     [ -z "$file" ] && continue;
     if [ -z "$roll" ] || [ -z "$pitch" ]
     then
@@ -31,8 +31,8 @@ Apply the corrections :
     pitch=$(awk "BEGIN {print -1 * ($pitch)}");
     echo "apply $file roll=$roll pitch=$pitch";
     exiftool -overwrite_original "-XMP-GPano:PoseRollDegrees=$roll" "-XMP-GPano:PosePitchDegrees=$pitch" "$file"
-done < check.csv `
-
+done < check.csv`
+```
 
 ## Raspberry Pi 4/5 miniconda
 
