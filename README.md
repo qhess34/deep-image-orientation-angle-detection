@@ -21,7 +21,7 @@ Apply the corrections :
     file=$(echo "$file" | xargs);
     roll=$(echo "$roll" | xargs);
     pitch=$(echo "$pitch" | xargs);
-
+  
     [ -z "$file" ] && continue;
     if [ -z "$roll" ] || [ -z "$pitch" ]
     then
